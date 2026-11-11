@@ -41,3 +41,4 @@ class AppColors {
   static const Color appScaffoldColor = lightBackground;
   static const Color appTextColor = lightTextPrimary;
 }
+

@@ -149,3 +149,4 @@ class _SnowPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant _SnowPainter oldDelegate) => true;
 }
+
