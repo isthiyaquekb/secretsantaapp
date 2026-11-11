@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showGiftChoices = false; // Controls visibility of the 3 gift choices
 
   // Set to keep track of employees who have already picked their friend in the current session
-  Set<String> _completedPickers = {};
+  final Set<String> _completedPickers = {};
 
   @override
   void initState() {
@@ -212,8 +212,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     children: [
                       const SizedBox(height: 18.0),
                       CommonTextWidget(
-                        title:
-                        'Add Employee',
+                        title: 'Add Employee',
                         color: Colors.deepPurple,
                         fontSize: 20,
                         fontWeight: FontWeight.w700,
@@ -221,7 +220,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(height: 8.0),
                       CommonTextWidget(
                         title:
-                        'Enter employee names to add them to the list of participants.',
+                            'Enter employee names to add them to the list of participants.',
                         fontSize: 14,
                         fontWeight: FontWeight.w400,
                         color: Colors.black54,
@@ -287,8 +286,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         child: CommonTextWidget(
-                          title:
-                          'Add Employee',
+                          title: 'Add Employee',
                           color: Colors.white,
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
@@ -331,8 +329,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   elevation: 5,
                 ),
                 child: CommonTextWidget(
-                  title:
-                  'Generate/Reset All Pairings',
+                  title: 'Generate/Reset All Pairings',
                   color: Colors.white,
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
@@ -364,7 +361,7 @@ class _HomeScreenState extends State<HomeScreen> {
               if (initialList.isNotEmpty &&
                   allPairings.isNotEmpty) // Only show if pairings are generated
                 DragTarget<String>(
-                  onAccept: (data) {
+                  onAcceptWithDetails: (data) {
                     // Only accept if this picker hasn't completed their turn yet
                     if (!_completedPickers.contains(data)) {
                       setState(() {
@@ -405,7 +402,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const SizedBox(height: 6),
                           CommonTextWidget(
                             title:
-                            'Drag an employee chip here to start their pick!',
+                                'Drag an employee chip here to start their pick!',
                             fontSize: 16,
                             color: Colors.grey,
                           ),
@@ -416,8 +413,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Column(
                               children: [
                                 CommonTextWidget(
-                                  title:
-                                  'Selected Picker::',
+                                  title: 'Selected Picker::',
                                   fontSize: 18,
                                   color: Colors.deepPurple,
                                   fontWeight: FontWeight.bold,
@@ -465,8 +461,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Column(
                               children: [
                                 CommonTextWidget(
-                                  title:
-                                  'You picked:',
+                                  title: 'You picked:',
                                   fontSize: 18,
                                   color: Colors.deepOrange,
                                   fontWeight: FontWeight.bold,
@@ -515,8 +510,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Column(
                               children: [
                                 CommonTextWidget(
-                                  title:
-                                  'Suggested Gifts:',
+                                  title: 'Suggested Gifts:',
                                   fontSize: 18,
                                   color: Colors.green,
                                   fontWeight: FontWeight.bold,
