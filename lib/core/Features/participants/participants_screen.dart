@@ -1,6 +1,8 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:xmasfriend/core/Features/draw/whos_drawing_screen.dart';
+import 'package:xmasfriend/core/constants/app_assets.dart';
 import 'package:xmasfriend/core/services/draw_service.dart';
 import 'package:xmasfriend/core/services/participant_import_service.dart';
 import 'package:xmasfriend/core/services/storage_service.dart';
@@ -188,18 +190,29 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
                             ),
                           ),
                           Container(
-                            width: 38,
-                            height: 38,
+                            width: 48,
+                            height: 48,
                             decoration: BoxDecoration(
                               color: isDark
                                   ? AppColors.darkSurfaceContainerHigh
                                   : AppColors.lightSurfaceContainerHigh,
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              Icons.card_giftcard,
-                              size: 20,
-                              color: theme.colorScheme.primary,
+                            child:Padding(
+                              padding: const EdgeInsets.all(4.0),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(40),
+                                child: SvgPicture.asset(
+                                  AppAssets.appLogoSvg,
+                                  width: 40,
+                                  height: 40,
+                                  errorBuilder: (_, __, ___) => Icon(
+                                    Icons.card_giftcard,
+                                    size: 44,
+                                    color: theme.colorScheme.primary,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ],

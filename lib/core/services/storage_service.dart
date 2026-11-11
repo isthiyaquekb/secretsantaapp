@@ -10,15 +10,7 @@ class StorageService {
 
   static Future<List<String>> loadParticipants() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getStringList(_keyParticipants) ?? [
-      'Issac',
-      'Jayesh',
-      'Sachin',
-      'Gopika',
-      'Ashoka',
-      'Steffy',
-      'Amal',
-    ];
+    return prefs.getStringList(_keyParticipants) ?? [];
   }
 
   static Future<void> saveParticipants(List<String> list) async {
