@@ -1,4 +1,4 @@
-name: sacretsantaapp
+name: xmasfriend
 description: "A new Flutter project."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
@@ -41,6 +41,8 @@ dependencies:
   confetti: ^0.8.0
   shared_preferences: ^2.5.5
   flutter_svg: ^2.3.0
+  flutter_secure_storage: ^11.2.0
+  crypto: ^3.0.8
 
 dev_dependencies:
   flutter_test:
