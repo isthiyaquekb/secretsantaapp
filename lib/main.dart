@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:xmasfriend/core/Features/splash_screen/splash_screen.dart';
+import 'package:xmasfriend/core/theme/app_theme.dart';
 
 void main() {
   runApp(const MyApp());
@@ -8,17 +9,15 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'X-Mas Friend Picker',
+      title: 'Secret Santa',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        fontFamily: '',
-      ),
-      home: SplashScreen(),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.system,
+      home: const SplashScreen(),
     );
   }
 }
