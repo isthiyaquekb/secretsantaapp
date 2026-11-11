@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:xmasfriend/core/Features/draw/whos_drawing_screen.dart';
 import 'package:xmasfriend/core/constants/app_assets.dart';
+import 'package:xmasfriend/core/data/draw_repository.dart';
 import 'package:xmasfriend/core/services/draw_service.dart';
 import 'package:xmasfriend/core/services/participant_import_service.dart';
 import 'package:xmasfriend/core/services/storage_service.dart';
@@ -31,9 +32,16 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
   }
 
   Future<void> _loadData() async {
-    final list = await StorageService.loadParticipants();
+    final state = await DrawRepository.instance.load();
+    List<String> list = state.participants;
+    if (list.isEmpty) {
+      list = await StorageService.loadParticipants();
+      if (list.isNotEmpty) {
+        await DrawRepository.instance.save(state.copyWith(participants: list));
+      }
+    }
     setState(() {
-      _participants = list;
+      _participants = List<String>.from(list);
       _isLoading = false;
     });
   }
@@ -45,7 +53,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
     super.dispose();
   }
 
-  void _addParticipant() {
+  Future<void> _addParticipant() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
@@ -67,15 +75,21 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
       _participants.add(name);
       _nameController.clear();
     });
-    StorageService.saveParticipants(_participants);
+    final state = await DrawRepository.instance.load();
+    await DrawRepository.instance
+        .save(state.copyWith(participants: _participants));
+    await StorageService.saveParticipants(_participants);
     _nameFocus.requestFocus();
   }
 
-  void _removeParticipant(int index) {
+  Future<void> _removeParticipant(int index) async {
     setState(() {
       _participants.removeAt(index);
     });
-    StorageService.saveParticipants(_participants);
+    final state = await DrawRepository.instance.load();
+    await DrawRepository.instance
+        .save(state.copyWith(participants: _participants));
+    await StorageService.saveParticipants(_participants);
   }
 
   Future<void> _importFile() async {
@@ -98,6 +112,9 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
       setState(() {
         _participants.addAll(importResult.addedNames);
       });
+      final state = await DrawRepository.instance.load();
+      await DrawRepository.instance
+          .save(state.copyWith(participants: _participants));
       await StorageService.saveParticipants(_participants);
 
       if (!mounted) return;
@@ -129,16 +146,24 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
       return;
     }
 
-    // Check if pairings already exist or if we should generate fresh ones
-    final existingPairings = await StorageService.loadPairings();
-    if (existingPairings.isEmpty ||
-        existingPairings.length != _participants.length) {
-      final newPairs = SecretSantaDrawService.generatePairings(_participants);
-      await StorageService.savePairings(newPairs);
-    }
+    // Generate fresh pairings using Sattolo's single-cycle algorithm
+    final pairsList = SecretSantaDrawService.generatePairings(_participants);
+    final Map<String, String> pairsMap = {
+      for (final p in pairsList) p.picker: p.picked,
+    };
+
+    final state = await DrawRepository.instance.load();
+    await DrawRepository.instance.save(
+      state.copyWith(
+        participants: _participants,
+        pairings: pairsMap,
+        revealed: {},
+      ),
+    );
+    await StorageService.savePairings(pairsList);
 
     if (!mounted) return;
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (context) => const WhosDrawingScreen(),
       ),

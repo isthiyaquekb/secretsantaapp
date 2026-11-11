@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:xmasfriend/core/Features/hr/hr_pairings_screen.dart';
-import 'package:xmasfriend/core/services/storage_service.dart';
+import 'package:xmasfriend/core/Features/participants/participants_screen.dart';
+import 'package:xmasfriend/core/data/draw_repository.dart';
 import 'package:xmasfriend/core/theme/app_colors.dart';
 import 'package:xmasfriend/core/theme/app_theme.dart';
 import 'package:xmasfriend/core/widgets/snowfall_overlay.dart';
@@ -13,8 +14,29 @@ class HrPinScreen extends StatefulWidget {
 }
 
 class _HrPinScreenState extends State<HrPinScreen> {
+  bool _isLoading = true;
+  bool _hasExistingPin = false;
+
+  // Setup mode states
+  bool _isConfirmingSetup = false;
+  String _setupFirstPin = '';
+
   String _enteredPin = '';
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPinStatus();
+  }
+
+  Future<void> _checkPinStatus() async {
+    final hasPin = await DrawRepository.instance.hasHrPin();
+    setState(() {
+      _hasExistingPin = hasPin;
+      _isLoading = false;
+    });
+  }
 
   void _onDigitPress(String digit) {
     if (_enteredPin.length < 4) {
@@ -24,7 +46,11 @@ class _HrPinScreenState extends State<HrPinScreen> {
       });
 
       if (_enteredPin.length == 4) {
-        _validatePin();
+        if (!_hasExistingPin) {
+          _handleSetupStep();
+        } else {
+          _validateExistingPin();
+        }
       }
     }
   }
@@ -38,9 +64,38 @@ class _HrPinScreenState extends State<HrPinScreen> {
     }
   }
 
-  Future<void> _validatePin() async {
-    final expectedPin = await StorageService.getHrPin();
-    if (_enteredPin == expectedPin) {
+  Future<void> _handleSetupStep() async {
+    if (!_isConfirmingSetup) {
+      // Transition to confirmation step
+      setState(() {
+        _setupFirstPin = _enteredPin;
+        _enteredPin = '';
+        _isConfirmingSetup = true;
+      });
+    } else {
+      // Check confirmation matches
+      if (_enteredPin == _setupFirstPin) {
+        await DrawRepository.instance.setHrPin(_enteredPin);
+        if (!mounted) return;
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => const HrPairingsScreen(),
+          ),
+        );
+      } else {
+        setState(() {
+          _errorMessage = 'PINs do not match. Please start again.';
+          _enteredPin = '';
+          _setupFirstPin = '';
+          _isConfirmingSetup = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _validateExistingPin() async {
+    final isValid = await DrawRepository.instance.verifyHrPin(_enteredPin);
+    if (isValid) {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
@@ -55,8 +110,8 @@ class _HrPinScreenState extends State<HrPinScreen> {
     }
   }
 
-  void _showForgotPinDialog() {
-    showDialog(
+  Future<void> _showForgotPinDialog() async {
+    final confirmed = await showDialog<bool>(
       context: context,
       builder: (context) {
         final theme = Theme.of(context);
@@ -64,28 +119,74 @@ class _HrPinScreenState extends State<HrPinScreen> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: Text('Master PIN Info', style: theme.textTheme.headlineSmall),
+          title: Text('Reset Master PIN & Draw?',
+              style: theme.textTheme.headlineSmall),
           content: const Text(
-            'The default master PIN is 1234.\n\nOnce inside the HR View, you can configure and change the master PIN at any time.',
+            'Resetting your coordinator PIN will permanently clear all generated pairings and active reveals. Participants will need to draw again.\n\nAre you sure you want to reset?',
           ),
           actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel'),
+            ),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(context, true),
               style: ElevatedButton.styleFrom(
-                minimumSize: const Size(80, 42),
+                backgroundColor: theme.colorScheme.error,
+                minimumSize: const Size(110, 42),
               ),
-              child: const Text('OK'),
+              child: const Text('Reset All'),
             ),
           ],
         );
       },
     );
+
+    if (confirmed == true) {
+      await DrawRepository.instance.resetDrawAndPin();
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('HR PIN and draw have been reset.'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+          builder: (context) => const ParticipantsScreen(),
+        ),
+        (route) => false,
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+
+    if (_isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    String titleText = 'HR view';
+    String subtitleText =
+        'Enter the 4-digit PIN to manage\npairings and secret assignments.';
+
+    if (!_hasExistingPin) {
+      if (!_isConfirmingSetup) {
+        titleText = 'Set a 4-digit PIN';
+        subtitleText =
+            'Create a 4-digit master PIN to secure\nconfidential coordinator access.';
+      } else {
+        titleText = 'Confirm PIN';
+        subtitleText = 'Re-enter your 4-digit master PIN\nto confirm.';
+      }
+    }
 
     return Scaffold(
       body: SnowfallOverlay(
@@ -175,12 +276,13 @@ class _HrPinScreenState extends State<HrPinScreen> {
                 const SizedBox(height: 14),
 
                 Text(
-                  'HR view',
+                  titleText,
                   style: theme.textTheme.displayMedium,
+                  textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'Enter the 4-digit PIN to manage\npairings and secret assignments.',
+                  subtitleText,
                   textAlign: TextAlign.center,
                   style: theme.textTheme.bodyMedium?.copyWith(
                     color: isDark
@@ -216,6 +318,7 @@ class _HrPinScreenState extends State<HrPinScreen> {
                   const SizedBox(height: 10),
                   Text(
                     _errorMessage!,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                       color: theme.colorScheme.error,
                       fontSize: 13,
@@ -231,16 +334,20 @@ class _HrPinScreenState extends State<HrPinScreen> {
 
                 const SizedBox(height: 16),
 
-                // Forgot PIN Link
-                TextButton(
-                  onPressed: _showForgotPinDialog,
-                  child: Text(
-                    'Forgot master PIN?',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      fontWeight: FontWeight.w600,
+                // Forgot PIN Link (only if a PIN exists)
+                if (_hasExistingPin)
+                  TextButton(
+                    onPressed: _showForgotPinDialog,
+                    child: Text(
+                      'Forgot master PIN?',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
-                  ),
-                ),
+                  )
+                else
+                  const SizedBox(height: 38),
+
                 Text(
                   'Confidential coordinator access',
                   style: theme.textTheme.labelSmall?.copyWith(
@@ -281,20 +388,17 @@ class _HrPinScreenState extends State<HrPinScreen> {
           width: 68,
           height: 68,
           decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
+            color: isDark
+                ? AppColors.darkSurfaceContainerHigh
+                : AppColors.lightSurfaceContainerHigh,
             shape: BoxShape.circle,
-            border: Border.all(
-              color: theme.dividerTheme.color ?? AppColors.lightDivider,
-              width: 1,
-            ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 digit,
-                style: const TextStyle(
-                  fontSize: 22,
+                style: theme.textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -303,11 +407,10 @@ class _HrPinScreenState extends State<HrPinScreen> {
                   letters[digit]!,
                   style: TextStyle(
                     fontSize: 9,
+                    letterSpacing: 1.2,
                     color: isDark
                         ? AppColors.darkTextMuted
                         : AppColors.lightTextMuted,
-                    letterSpacing: 1.0,
-                    fontWeight: FontWeight.w600,
                   ),
                 ),
             ],
@@ -348,19 +451,7 @@ class _HrPinScreenState extends State<HrPinScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            SizedBox(
-              width: 68,
-              height: 68,
-              child: Center(
-                child: Icon(
-                  Icons.fingerprint,
-                  size: 26,
-                  color: isDark
-                      ? AppColors.darkTextMuted
-                      : AppColors.lightTextMuted,
-                ),
-              ),
-            ),
+            const SizedBox(width: 68, height: 68),
             buildButton('0'),
             InkWell(
               onTap: _onBackspacePress,
@@ -385,4 +476,3 @@ class _HrPinScreenState extends State<HrPinScreen> {
     );
   }
 }
-

@@ -1,17 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:xmasfriend/core/Features/draw/whos_drawing_screen.dart';
 import 'package:xmasfriend/core/Features/draw/private_reveal_screen.dart';
 import 'package:xmasfriend/core/Features/hr/hr_pairings_screen.dart';
 import 'package:xmasfriend/core/Features/participants/participants_screen.dart';
+import 'package:xmasfriend/core/data/draw_repository.dart';
+import 'package:xmasfriend/core/data/draw_state.dart';
 import 'package:xmasfriend/core/employee_pair.dart';
 import 'package:xmasfriend/core/services/storage_service.dart';
 import 'package:xmasfriend/core/theme/app_theme.dart';
 
 void main() {
   setUp(() async {
+    FlutterSecureStorage.setMockInitialValues({});
     SharedPreferences.setMockInitialValues({});
+    DrawRepository.instance.resetCache();
+
+    await DrawRepository.instance.save(
+      const DrawState(
+        year: 2026,
+        participants: ['Alice', 'Bob', 'Charlie'],
+        pairings: {
+          'Alice': 'Bob',
+          'Bob': 'Charlie',
+          'Charlie': 'Alice',
+        },
+        revealed: {'Bob'},
+      ),
+    );
+
     await StorageService.saveParticipants(['Alice', 'Bob', 'Charlie']);
     await StorageService.savePairings([
       EmployeePair(picker: 'Alice', picked: 'Bob', hasDrawn: false),
@@ -38,6 +57,7 @@ void main() {
             home: const ParticipantsScreen(),
           ),
         );
+        await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
 
         final err = tester.takeException();
@@ -58,6 +78,7 @@ void main() {
           home: const WhosDrawingScreen(),
         ),
       );
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
       final err = tester.takeException();
@@ -77,6 +98,7 @@ void main() {
           home: const PrivateRevealScreen(pickerName: 'Alice'),
         ),
       );
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
       final err1 = tester.takeException();
@@ -113,12 +135,13 @@ void main() {
           home: const HrPairingsScreen(),
         ),
       );
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 100));
 
       final err = tester.takeException();
       expect(err, isNull);
       expect(find.text('Pairings'), findsOneWidget);
-      expect(find.text('Reset draw'), findsOneWidget);
+      expect(find.text('Exchange date'), findsOneWidget);
     });
   }
 }

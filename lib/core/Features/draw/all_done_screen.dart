@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:xmasfriend/core/Features/hr/hr_pin_screen.dart';
+import 'package:xmasfriend/core/data/draw_repository.dart';
+import 'package:xmasfriend/core/data/draw_state.dart';
 import 'package:xmasfriend/core/employee_pair.dart';
 import 'package:xmasfriend/core/services/storage_service.dart';
 import 'package:xmasfriend/core/theme/app_colors.dart';
 import 'package:xmasfriend/core/theme/app_theme.dart';
+import 'package:xmasfriend/core/utils/exchange_date.dart';
 import 'package:xmasfriend/core/widgets/app_avatar.dart';
 import 'package:xmasfriend/core/widgets/snowfall_overlay.dart';
 
@@ -16,6 +19,7 @@ class AllDoneScreen extends StatefulWidget {
 
 class _AllDoneScreenState extends State<AllDoneScreen> {
   List<EmployeePair> _pairings = [];
+  DrawState _state = DrawState(year: currentSeasonYear());
   bool _isLoading = true;
 
   @override
@@ -25,17 +29,31 @@ class _AllDoneScreenState extends State<AllDoneScreen> {
   }
 
   Future<void> _loadData() async {
-    final list = await StorageService.loadPairings();
+    final state = await DrawRepository.instance.load();
+    List<EmployeePair> list;
+    if (state.pairings.isNotEmpty) {
+      list = state.participants.map((name) {
+        final picked = state.pairings[name] ?? '';
+        final hasDrawn = state.revealed.contains(name);
+        return EmployeePair(picker: name, picked: picked, hasDrawn: hasDrawn);
+      }).toList();
+    } else {
+      list = await StorageService.loadPairings();
+    }
+
     setState(() {
+      _state = state;
       _pairings = list;
       _isLoading = false;
     });
   }
 
   void _onCalendarPressed() {
+    final date = _state.exchangeDate ?? defaultExchangeDate(_state.year);
+    final dateStr = formatShortDate(date);
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Exchange scheduled for Dec 20 at 4:00 PM!'),
+      SnackBar(
+        content: Text('Exchange scheduled for $dateStr at 4:00 PM!'),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -87,7 +105,7 @@ class _AllDoneScreenState extends State<AllDoneScreen> {
                                 ),
                                 const SizedBox(width: 6),
                                 Text(
-                                  'SECRET SANTA 2024',
+                                  'SECRET SANTA ${_state.year}',
                                   style: theme.textTheme.labelSmall?.copyWith(
                                     fontWeight: FontWeight.w600,
                                     letterSpacing: 0.5,
@@ -299,7 +317,7 @@ class _AllDoneScreenState extends State<AllDoneScreen> {
                             ),
                             const SizedBox(height: 6),
                             Text(
-                              'Exchange on Dec 20',
+                              'Exchange on ${formatShortDate(_state.exchangeDate ?? defaultExchangeDate(_state.year))}',
                               style: theme.textTheme.headlineSmall,
                             ),
                             const SizedBox(height: 6),

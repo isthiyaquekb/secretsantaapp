@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:xmasfriend/core/Features/draw/all_done_screen.dart';
+import 'package:xmasfriend/core/Features/draw/whos_drawing_screen.dart';
 import 'package:xmasfriend/core/Features/participants/participants_screen.dart';
 import 'package:xmasfriend/core/constants/app_assets.dart';
+import 'package:xmasfriend/core/data/draw_repository.dart';
 import 'package:xmasfriend/core/theme/app_colors.dart';
 import 'package:xmasfriend/core/widgets/snowfall_overlay.dart';
 
@@ -83,13 +86,24 @@ class _SplashScreenState extends State<SplashScreen>
     }
 
     if (!mounted) return;
+    await _goNext();
+  }
+
+  Future<void> _goNext() async {
+    final state = await DrawRepository.instance.load();
+    if (!mounted) return;
+    final Widget next = !state.isDrawn
+        ? const ParticipantsScreen()
+        : state.isComplete
+            ? const AllDoneScreen()
+            : const WhosDrawingScreen();
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 500),
-        pageBuilder: (_, __, ___) => const ParticipantsScreen(),
-        transitionsBuilder: (_, animation, __, child) =>
-            FadeTransition(opacity: animation, child: child),
+        pageBuilder: (_, __, ___) => next,
+        transitionsBuilder: (_, a, __, child) =>
+            FadeTransition(opacity: a, child: child),
       ),
     );
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:xmasfriend/core/Features/draw/all_done_screen.dart';
 import 'package:xmasfriend/core/Features/draw/private_reveal_screen.dart';
 import 'package:xmasfriend/core/Features/hr/hr_pin_screen.dart';
+import 'package:xmasfriend/core/data/draw_repository.dart';
 import 'package:xmasfriend/core/employee_pair.dart';
 import 'package:xmasfriend/core/services/storage_service.dart';
 import 'package:xmasfriend/core/theme/app_colors.dart';
@@ -27,14 +28,32 @@ class _WhosDrawingScreenState extends State<WhosDrawingScreen> {
   }
 
   Future<void> _loadData() async {
-    final list = await StorageService.loadPairings();
+    final state = await DrawRepository.instance.load();
+    if (state.isComplete) {
+      if (!mounted) return;
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const AllDoneScreen()),
+      );
+      return;
+    }
+
+    List<EmployeePair> pairs;
+    if (state.pairings.isNotEmpty) {
+      pairs = state.participants.map((name) {
+        final picked = state.pairings[name] ?? '';
+        final hasDrawn = state.revealed.contains(name);
+        return EmployeePair(picker: name, picked: picked, hasDrawn: hasDrawn);
+      }).toList();
+    } else {
+      pairs = await StorageService.loadPairings();
+    }
+
     setState(() {
-      _pairings = list;
+      _pairings = pairs;
       _isLoading = false;
     });
 
-    // If everyone has drawn, jump to AllDoneScreen
-    if (list.isNotEmpty && list.every((p) => p.hasDrawn)) {
+    if (pairs.isNotEmpty && pairs.every((p) => p.hasDrawn)) {
       if (!mounted) return;
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const AllDoneScreen()),

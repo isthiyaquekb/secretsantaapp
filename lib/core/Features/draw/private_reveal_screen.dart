@@ -1,5 +1,6 @@
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
+import 'package:xmasfriend/core/data/draw_repository.dart';
 import 'package:xmasfriend/core/employee_pair.dart';
 import 'package:xmasfriend/core/services/storage_service.dart';
 import 'package:xmasfriend/core/theme/app_colors.dart';
@@ -22,6 +23,7 @@ class _PrivateRevealScreenState extends State<PrivateRevealScreen>
     with WidgetsBindingObserver {
   late ConfettiController _confettiController;
   EmployeePair? _pair;
+  int _year = currentSeasonYear();
   bool _isLoading = true;
   bool _isHolding = false;
   bool _hasRevealedOnce = false;
@@ -51,11 +53,23 @@ class _PrivateRevealScreenState extends State<PrivateRevealScreen>
   }
 
   Future<void> _loadPair() async {
-    final pairings = await StorageService.loadPairings();
-    final pair = pairings.firstWhere(
-      (p) => p.picker.toLowerCase() == widget.pickerName.toLowerCase(),
-      orElse: () => EmployeePair(picker: widget.pickerName, picked: 'Unknown'),
-    );
+    final state = await DrawRepository.instance.load();
+    _year = state.year;
+
+    EmployeePair pair;
+    if (state.pairings.containsKey(widget.pickerName)) {
+      final picked = state.pairings[widget.pickerName]!;
+      final hasDrawn = state.revealed.contains(widget.pickerName);
+      pair = EmployeePair(
+          picker: widget.pickerName, picked: picked, hasDrawn: hasDrawn);
+    } else {
+      final pairings = await StorageService.loadPairings();
+      pair = pairings.firstWhere(
+        (p) => p.picker.toLowerCase() == widget.pickerName.toLowerCase(),
+        orElse: () =>
+            EmployeePair(picker: widget.pickerName, picked: 'Unknown'),
+      );
+    }
 
     setState(() {
       _pair = pair;
@@ -150,6 +164,9 @@ class _PrivateRevealScreenState extends State<PrivateRevealScreen>
   Future<void> _completeTurn() async {
     if (_pair == null) return;
 
+    // Mark revealed in DrawRepository
+    await DrawRepository.instance.markRevealed(widget.pickerName);
+
     final pairings = await StorageService.loadPairings();
     final updatedList = pairings.map((p) {
       if (p.picker.toLowerCase() == widget.pickerName.toLowerCase()) {
@@ -239,7 +256,7 @@ class _PrivateRevealScreenState extends State<PrivateRevealScreen>
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                'Exchange 2024',
+                                'Exchange $_year',
                                 style: theme.textTheme.labelSmall?.copyWith(
                                   fontWeight: FontWeight.w600,
                                 ),
