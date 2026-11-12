@@ -2,11 +2,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:xmasfriend/core/Features/draw/whos_drawing_screen.dart';
+import 'package:xmasfriend/core/Features/participants/widgets/import_confirm_bottom_sheet.dart';
 import 'package:xmasfriend/core/constants/app_assets.dart';
 import 'package:xmasfriend/core/data/draw_repository.dart';
 import 'package:xmasfriend/core/services/draw_service.dart';
 import 'package:xmasfriend/core/services/participant_import_service.dart';
 import 'package:xmasfriend/core/services/storage_service.dart';
+import 'package:xmasfriend/core/services/template_service.dart';
 import 'package:xmasfriend/core/theme/app_colors.dart';
 import 'package:xmasfriend/core/theme/app_theme.dart';
 import 'package:xmasfriend/core/widgets/app_avatar.dart';
@@ -92,6 +94,27 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
     await StorageService.saveParticipants(_participants);
   }
 
+  Future<void> _downloadSampleTemplate() async {
+    try {
+      await TemplateService.downloadOrShareSampleTemplate();
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Sample CSV ready!'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text("Couldn't download template."),
+          backgroundColor: Colors.red.shade800,
+        ),
+      );
+    }
+  }
+
   Future<void> _importFile() async {
     try {
       final file = await FilePicker.pickFile(
@@ -103,11 +126,105 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
 
       final bytes = await file.readAsBytes();
 
-      final importResult = ParticipantImportService.parseFileBytes(
+      // Parse the file into a table
+      final table = ParticipantImportService.parseTable(
         bytes: bytes,
         fileName: file.name,
-        existingParticipants: _participants,
       );
+
+      // Detect the best matching column (or null if none qualifies)
+      final detectedColumn = ParticipantImportService.detectNameColumn(table);
+
+      if (!mounted) return;
+
+      // Show minimal confirmation bottom sheet
+      final selectedColumn = await showModalBottomSheet<ColumnSelection>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) => ImportConfirmBottomSheet(
+          table: table,
+          initialSelection: detectedColumn,
+        ),
+      );
+
+      if (selectedColumn == null || !mounted) return;
+
+      // Extract raw cleaned names
+      final rawNames = ParticipantImportService.extractRawNames(
+        table,
+        selectedColumn,
+      );
+
+      if (rawNames.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No names found in the selected column.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
+
+      // Check for duplicate names
+      final duplicateCount = ParticipantImportService.countDuplicates(
+        rawNames,
+        _participants,
+      );
+
+      bool renumberDuplicates = false;
+      if (duplicateCount > 0) {
+        final choice = await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (dialogCtx) => AlertDialog(
+            title: Text(
+              'Duplicate Names Found',
+              style: TextStyle(
+                fontFamily: AppTheme.serifFamily,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: Text(
+              '$duplicateCount duplicate ${duplicateCount == 1 ? 'name' : 'names'} found. Add numbers (John Smith 2) or skip them?',
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(null),
+                child: const Text('Cancel'),
+              ),
+              OutlinedButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(false),
+                child: const Text('Skip them'),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(dialogCtx).pop(true),
+                child: const Text('Add numbers'),
+              ),
+            ],
+          ),
+        );
+
+        if (choice == null || !mounted) return;
+        renumberDuplicates = choice;
+      }
+
+      // Finalize import with 500 limit
+      final importResult = ParticipantImportService.finalizeImport(
+        extractedNames: rawNames,
+        existingParticipants: _participants,
+        renumberDuplicates: renumberDuplicates,
+      );
+
+      if (importResult.addedNames.isEmpty && importResult.reachedLimit) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Maximum 500 participants reached. No names were added.'),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+        return;
+      }
 
       setState(() {
         _participants.addAll(importResult.addedNames);
@@ -130,7 +247,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text(
-            "Couldn't read this file. Try re-saving it as .xlsx or CSV.",
+            "Couldn't read this file. Check the format or use the template.",
           ),
           backgroundColor: Colors.red.shade800,
         ),
@@ -315,70 +432,127 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
                         ),
                       ),
 
-                      // Import from Excel or CSV row
+                      // Import from Excel or CSV and Download sample CSV row
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 4,
-                          vertical: 10,
+                          vertical: 6,
                         ),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              child: InkWell(
-                                onTap: _importFile,
-                                borderRadius: BorderRadius.circular(6),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 4,
-                                    horizontal: 2,
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.file_upload_outlined,
-                                        size: 16,
-                                        color: isDark
-                                            ? AppColors.darkTextMuted
-                                            : AppColors.lightTextMuted,
-                                      ),
-                                      const SizedBox(width: 4),
-                                      Flexible(
-                                        child: Text(
-                                          'Import from Excel or CSV',
-                                          style: theme.textTheme.bodySmall?.copyWith(
-                                            decoration: TextDecoration.underline,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
                             Row(
-                              mainAxisSize: MainAxisSize.min,
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Container(
-                                  width: 7,
-                                  height: 7,
-                                  decoration: BoxDecoration(
-                                    color: count >= 3
-                                        ? theme.colorScheme.primary
-                                        : Colors.orange,
-                                    shape: BoxShape.circle,
+                                Flexible(
+                                  child: InkWell(
+                                    onTap: _importFile,
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                        horizontal: 2,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.file_upload_outlined,
+                                            size: 16,
+                                            color: isDark
+                                                ? AppColors.darkTextMuted
+                                                : AppColors.lightTextMuted,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              'Import from Excel or CSV',
+                                              style: theme.textTheme.bodySmall?.copyWith(
+                                                decoration: TextDecoration.underline,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  count >= 3 ? 'Ready to match' : 'Min. 3 needed',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    fontWeight: FontWeight.w500,
+                                const SizedBox(width: 8),
+                                Flexible(
+                                  child: InkWell(
+                                    onTap: _downloadSampleTemplate,
+                                    borderRadius: BorderRadius.circular(6),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 4,
+                                        horizontal: 2,
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(
+                                            Icons.download_outlined,
+                                            size: 16,
+                                            color: theme.colorScheme.primary,
+                                          ),
+                                          const SizedBox(width: 4),
+                                          Flexible(
+                                            child: Text(
+                                              'Download sample CSV',
+                                              style: theme.textTheme.bodySmall?.copyWith(
+                                                decoration: TextDecoration.underline,
+                                                fontWeight: FontWeight.w500,
+                                                color: theme.colorScheme.primary,
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
                                   ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    'Tip: use a column named Name, or First Name and Last Name.',
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      fontSize: 11,
+                                      color: isDark
+                                          ? AppColors.darkTextMuted
+                                          : AppColors.lightTextMuted,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: 7,
+                                      height: 7,
+                                      decoration: BoxDecoration(
+                                        color: count >= 3
+                                            ? theme.colorScheme.primary
+                                            : Colors.orange,
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      count >= 3 ? 'Ready to match' : 'Min. 3 needed',
+                                      style: theme.textTheme.bodySmall?.copyWith(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),

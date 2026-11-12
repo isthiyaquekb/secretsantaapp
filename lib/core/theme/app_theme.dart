@@ -10,6 +10,8 @@ class AppTheme {
   static const double cardRadius = 14.0;
   static const double inputRadius = 10.0;
 
+  static String? get serifFamily => GoogleFonts.fraunces().fontFamily;
+
   static ThemeData get lightTheme {
     final baseText = GoogleFonts.interTextTheme();
     final serifHeadline = GoogleFonts.fraunces();
