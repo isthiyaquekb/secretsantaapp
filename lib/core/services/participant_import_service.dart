@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:csv/csv.dart' as csv_pkg;
 import 'package:excel/excel.dart' as excel_pkg;
-import 'package:xmasfriend/core/utils/xlsx_sanitizer.dart';
+import 'package:secretsantaapp/core/utils/xlsx_sanitizer.dart';
 
 /// Represents a parsed spreadsheet or CSV table with a header row and data rows.
 class ParsedTable {

@@ -1,4 +1,4 @@
-import 'package:xmasfriend/core/services/template_downloader/template_downloader.dart';
+import 'package:secretsantaapp/core/services/template_downloader/template_downloader.dart';
 
 class TemplateService {
   TemplateService._();

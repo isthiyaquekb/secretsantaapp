@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xmasfriend/core/services/draw_service.dart';
+import 'package:secretsantaapp/core/services/draw_service.dart';
 
 void main() {
   group('Secret Santa Sattolo Draw Logic Tests', () {

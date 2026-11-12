@@ -1,11 +1,11 @@
 import 'package:confetti/confetti.dart';
 import 'package:flutter/material.dart';
-import 'package:xmasfriend/core/data/draw_repository.dart';
-import 'package:xmasfriend/core/employee_pair.dart';
-import 'package:xmasfriend/core/services/storage_service.dart';
-import 'package:xmasfriend/core/theme/app_colors.dart';
-import 'package:xmasfriend/core/theme/app_theme.dart';
-import 'package:xmasfriend/core/widgets/snowfall_overlay.dart';
+import 'package:secretsantaapp/core/data/draw_repository.dart';
+import 'package:secretsantaapp/core/employee_pair.dart';
+import 'package:secretsantaapp/core/services/storage_service.dart';
+import 'package:secretsantaapp/core/theme/app_colors.dart';
+import 'package:secretsantaapp/core/theme/app_theme.dart';
+import 'package:secretsantaapp/core/widgets/snowfall_overlay.dart';
 
 class PrivateRevealScreen extends StatefulWidget {
   final String pickerName;

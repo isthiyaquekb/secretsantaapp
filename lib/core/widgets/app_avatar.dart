@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:xmasfriend/core/theme/app_colors.dart';
+import 'package:secretsantaapp/core/theme/app_colors.dart';
 
 class AppAvatar extends StatelessWidget {
   final String name;

@@ -1,4 +1,4 @@
-# xmasfriend
+# secretsantaapp
 
 A new Flutter project.
 

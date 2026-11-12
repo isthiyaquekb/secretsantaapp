@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:xmasfriend/core/Features/hr/hr_pairings_screen.dart';
-import 'package:xmasfriend/core/Features/participants/participants_screen.dart';
-import 'package:xmasfriend/core/data/draw_repository.dart';
-import 'package:xmasfriend/core/theme/app_colors.dart';
-import 'package:xmasfriend/core/theme/app_theme.dart';
-import 'package:xmasfriend/core/widgets/snowfall_overlay.dart';
+import 'package:secretsantaapp/core/Features/hr/hr_pairings_screen.dart';
+import 'package:secretsantaapp/core/Features/participants/participants_screen.dart';
+import 'package:secretsantaapp/core/data/draw_repository.dart';
+import 'package:secretsantaapp/core/theme/app_colors.dart';
+import 'package:secretsantaapp/core/theme/app_theme.dart';
+import 'package:secretsantaapp/core/widgets/snowfall_overlay.dart';
 
 class HrPinScreen extends StatefulWidget {
   const HrPinScreen({super.key});

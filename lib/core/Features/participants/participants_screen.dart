@@ -1,18 +1,18 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:xmasfriend/core/Features/draw/whos_drawing_screen.dart';
-import 'package:xmasfriend/core/Features/participants/widgets/import_confirm_bottom_sheet.dart';
-import 'package:xmasfriend/core/constants/app_assets.dart';
-import 'package:xmasfriend/core/data/draw_repository.dart';
-import 'package:xmasfriend/core/services/draw_service.dart';
-import 'package:xmasfriend/core/services/participant_import_service.dart';
-import 'package:xmasfriend/core/services/storage_service.dart';
-import 'package:xmasfriend/core/services/template_service.dart';
-import 'package:xmasfriend/core/theme/app_colors.dart';
-import 'package:xmasfriend/core/theme/app_theme.dart';
-import 'package:xmasfriend/core/widgets/app_avatar.dart';
-import 'package:xmasfriend/core/widgets/snowfall_overlay.dart';
+import 'package:secretsantaapp/core/Features/draw/whos_drawing_screen.dart';
+import 'package:secretsantaapp/core/Features/participants/widgets/import_confirm_bottom_sheet.dart';
+import 'package:secretsantaapp/core/constants/app_assets.dart';
+import 'package:secretsantaapp/core/data/draw_repository.dart';
+import 'package:secretsantaapp/core/services/draw_service.dart';
+import 'package:secretsantaapp/core/services/participant_import_service.dart';
+import 'package:secretsantaapp/core/services/storage_service.dart';
+import 'package:secretsantaapp/core/services/template_service.dart';
+import 'package:secretsantaapp/core/theme/app_colors.dart';
+import 'package:secretsantaapp/core/theme/app_theme.dart';
+import 'package:secretsantaapp/core/widgets/app_avatar.dart';
+import 'package:secretsantaapp/core/widgets/snowfall_overlay.dart';
 
 class ParticipantsScreen extends StatefulWidget {
   const ParticipantsScreen({super.key});

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xmasfriend/core/employee_pair.dart';
+import 'package:secretsantaapp/core/employee_pair.dart';
 
 class StorageService {
   static const String _keyParticipants = 'secretsanta_participants';

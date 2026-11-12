@@ -1,11 +1,11 @@
 {
-    "name": "xmasfriend",
-    "short_name": "xmasfriend",
+    "name": "Secret Santa",
+    "short_name": "Secret Santa",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "Secret Santa application.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

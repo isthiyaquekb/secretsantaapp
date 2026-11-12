@@ -1,10 +1,10 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xmasfriend/core/data/draw_repository.dart';
-import 'package:xmasfriend/core/data/draw_state.dart';
-import 'package:xmasfriend/core/services/draw_service.dart';
-import 'package:xmasfriend/core/utils/exchange_date.dart';
+import 'package:secretsantaapp/core/data/draw_repository.dart';
+import 'package:secretsantaapp/core/data/draw_state.dart';
+import 'package:secretsantaapp/core/services/draw_service.dart';
+import 'package:secretsantaapp/core/utils/exchange_date.dart';
 
 void main() {
   setUp(() {

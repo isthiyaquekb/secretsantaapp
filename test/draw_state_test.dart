@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xmasfriend/core/data/draw_state.dart';
+import 'package:secretsantaapp/core/data/draw_state.dart';
 
 void main() {
   group('DrawState Unit Tests', () {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xmasfriend/core/utils/exchange_date.dart';
+import 'package:secretsantaapp/core/utils/exchange_date.dart';
 
 void main() {
   group('Exchange Date Unit Tests', () {

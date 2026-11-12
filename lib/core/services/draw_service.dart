@@ -1,5 +1,5 @@
 import 'dart:math';
-import 'package:xmasfriend/core/employee_pair.dart';
+import 'package:secretsantaapp/core/employee_pair.dart';
 
 class SecretSantaDrawService {
   SecretSantaDrawService._();

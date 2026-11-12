@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:xmasfriend/core/services/participant_import_service.dart';
-import 'package:xmasfriend/core/theme/app_colors.dart';
-import 'package:xmasfriend/core/theme/app_theme.dart';
+import 'package:secretsantaapp/core/services/participant_import_service.dart';
+import 'package:secretsantaapp/core/theme/app_colors.dart';
+import 'package:secretsantaapp/core/theme/app_theme.dart';
 
 class ImportConfirmBottomSheet extends StatefulWidget {
   final ParsedTable table;

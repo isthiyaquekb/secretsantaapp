@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:xmasfriend/core/Features/participants/participants_screen.dart';
-import 'package:xmasfriend/core/data/draw_repository.dart';
-import 'package:xmasfriend/core/data/draw_state.dart';
-import 'package:xmasfriend/core/employee_pair.dart';
-import 'package:xmasfriend/core/services/storage_service.dart';
-import 'package:xmasfriend/core/theme/app_colors.dart';
-import 'package:xmasfriend/core/theme/app_theme.dart';
-import 'package:xmasfriend/core/utils/exchange_date.dart';
-import 'package:xmasfriend/core/widgets/app_avatar.dart';
-import 'package:xmasfriend/core/widgets/snowfall_overlay.dart';
+import 'package:secretsantaapp/core/Features/participants/participants_screen.dart';
+import 'package:secretsantaapp/core/data/draw_repository.dart';
+import 'package:secretsantaapp/core/data/draw_state.dart';
+import 'package:secretsantaapp/core/employee_pair.dart';
+import 'package:secretsantaapp/core/services/storage_service.dart';
+import 'package:secretsantaapp/core/theme/app_colors.dart';
+import 'package:secretsantaapp/core/theme/app_theme.dart';
+import 'package:secretsantaapp/core/utils/exchange_date.dart';
+import 'package:secretsantaapp/core/widgets/app_avatar.dart';
+import 'package:secretsantaapp/core/widgets/snowfall_overlay.dart';
 
 class HrPairingsScreen extends StatefulWidget {
   const HrPairingsScreen({super.key});

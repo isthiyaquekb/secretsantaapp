@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:xmasfriend/core/Features/draw/whos_drawing_screen.dart';
-import 'package:xmasfriend/core/Features/draw/private_reveal_screen.dart';
-import 'package:xmasfriend/core/Features/hr/hr_pairings_screen.dart';
-import 'package:xmasfriend/core/Features/participants/participants_screen.dart';
-import 'package:xmasfriend/core/data/draw_repository.dart';
-import 'package:xmasfriend/core/data/draw_state.dart';
-import 'package:xmasfriend/core/employee_pair.dart';
-import 'package:xmasfriend/core/services/storage_service.dart';
-import 'package:xmasfriend/core/theme/app_theme.dart';
+import 'package:secretsantaapp/core/Features/draw/whos_drawing_screen.dart';
+import 'package:secretsantaapp/core/Features/draw/private_reveal_screen.dart';
+import 'package:secretsantaapp/core/Features/hr/hr_pairings_screen.dart';
+import 'package:secretsantaapp/core/Features/participants/participants_screen.dart';
+import 'package:secretsantaapp/core/data/draw_repository.dart';
+import 'package:secretsantaapp/core/data/draw_state.dart';
+import 'package:secretsantaapp/core/employee_pair.dart';
+import 'package:secretsantaapp/core/services/storage_service.dart';
+import 'package:secretsantaapp/core/theme/app_theme.dart';
 
 void main() {
   setUp(() async {

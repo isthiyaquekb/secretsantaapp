@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:excel/excel.dart' as excel_pkg;
 import 'package:flutter_test/flutter_test.dart';
-import 'package:xmasfriend/core/services/participant_import_service.dart';
-import 'package:xmasfriend/core/utils/xlsx_sanitizer.dart';
+import 'package:secretsantaapp/core/services/participant_import_service.dart';
+import 'package:secretsantaapp/core/utils/xlsx_sanitizer.dart';
 
 void main() {
   group('ParticipantImportService Tests', () {
