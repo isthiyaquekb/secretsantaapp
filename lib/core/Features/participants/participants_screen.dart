@@ -125,11 +125,13 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
           behavior: SnackBarBehavior.floating,
         ),
       );
-    } catch (e) {
+    } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error importing file: $e'),
+          content: const Text(
+            "Couldn't read this file. Try re-saving it as .xlsx or CSV.",
+          ),
           backgroundColor: Colors.red.shade800,
         ),
       );

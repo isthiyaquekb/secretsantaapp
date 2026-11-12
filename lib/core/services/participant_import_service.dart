@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'package:csv/csv.dart' as csv_pkg;
 import 'package:excel/excel.dart' as excel_pkg;
+import 'package:xmasfriend/core/utils/xlsx_sanitizer.dart';
 
 class ImportResult {
   final List<String> addedNames;
@@ -56,7 +57,18 @@ class ParticipantImportService {
         }
       }
     } else if (extension == 'xlsx' || extension == 'xls') {
-      final excel = excel_pkg.Excel.decodeBytes(bytes);
+      excel_pkg.Excel excel;
+      try {
+        excel = excel_pkg.Excel.decodeBytes(bytes);
+      } catch (_) {
+        try {
+          excel = excel_pkg.Excel.decodeBytes(sanitizeXlsx(bytes));
+        } catch (_) {
+          throw const FormatException(
+            "Couldn't read this file. Try re-saving it as .xlsx or CSV.",
+          );
+        }
+      }
       if (excel.tables.isNotEmpty) {
         final firstSheetName = excel.tables.keys.first;
         final sheet = excel.tables[firstSheetName];
