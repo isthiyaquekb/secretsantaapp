@@ -10,3 +10,4 @@ Future<void> downloadOrShareCsv(String filename, String content) async {
   anchor.click();
   anchor.remove();
 }
+

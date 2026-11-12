@@ -42,6 +42,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
         await DrawRepository.instance.save(state.copyWith(participants: list));
       }
     }
+    if (!mounted) return;
     setState(() {
       _participants = List<String>.from(list);
       _isLoading = false;
@@ -55,13 +56,25 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
     super.dispose();
   }
 
+  // ---------------------------------------------------------------------------
+  // Actions
+  // ---------------------------------------------------------------------------
+
+  Future<void> _persistParticipants() async {
+    final state = await DrawRepository.instance.load();
+    await DrawRepository.instance.save(
+      state.copyWith(participants: _participants),
+    );
+    await StorageService.saveParticipants(_participants);
+  }
+
   Future<void> _addParticipant() async {
     final name = _nameController.text.trim();
     if (name.isEmpty) return;
 
     // Check if duplicate (case-insensitive)
     final isDup = _participants.any(
-      (p) => p.trim().toLowerCase() == name.toLowerCase(),
+          (p) => p.trim().toLowerCase() == name.toLowerCase(),
     );
     if (isDup) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -77,10 +90,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
       _participants.add(name);
       _nameController.clear();
     });
-    final state = await DrawRepository.instance.load();
-    await DrawRepository.instance
-        .save(state.copyWith(participants: _participants));
-    await StorageService.saveParticipants(_participants);
+    await _persistParticipants();
     _nameFocus.requestFocus();
   }
 
@@ -88,10 +98,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
     setState(() {
       _participants.removeAt(index);
     });
-    final state = await DrawRepository.instance.load();
-    await DrawRepository.instance
-        .save(state.copyWith(participants: _participants));
-    await StorageService.saveParticipants(_participants);
+    await _persistParticipants();
   }
 
   Future<void> _downloadSampleTemplate() async {
@@ -219,7 +226,9 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
       if (importResult.addedNames.isEmpty && importResult.reachedLimit) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Maximum 500 participants reached. No names were added.'),
+            content: Text(
+              'Maximum 500 participants reached. No names were added.',
+            ),
             behavior: SnackBarBehavior.floating,
           ),
         );
@@ -229,10 +238,7 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
       setState(() {
         _participants.addAll(importResult.addedNames);
       });
-      final state = await DrawRepository.instance.load();
-      await DrawRepository.instance
-          .save(state.copyWith(participants: _participants));
-      await StorageService.saveParticipants(_participants);
+      await _persistParticipants();
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -259,7 +265,9 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
     if (_participants.length < 3) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('At least 3 participants are required to start the draw.'),
+          content: Text(
+            'At least 3 participants are required to start the draw.',
+          ),
         ),
       );
       return;
@@ -283,11 +291,317 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
 
     if (!mounted) return;
     Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const WhosDrawingScreen(),
+      MaterialPageRoute(builder: (context) => const WhosDrawingScreen()),
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // UI building blocks
+  // ---------------------------------------------------------------------------
+
+  Color _muted(bool isDark) =>
+      isDark ? AppColors.darkTextMuted : AppColors.lightTextMuted;
+
+  Widget _linkButton({
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+    required Color color,
+  }) {
+    final style = Theme.of(context).textTheme.bodySmall?.copyWith(
+      decoration: TextDecoration.underline,
+      fontWeight: FontWeight.w500,
+      color: color,
+    );
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(6),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 2),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 16, color: color),
+            const SizedBox(width: 4),
+            Flexible(
+              child: Text(label, style: style, overflow: TextOverflow.ellipsis),
+            ),
+          ],
+        ),
       ),
     );
   }
+
+  Widget _buildHeader(ThemeData theme, bool isDark, int count) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      'Secret Santa',
+                      style: theme.textTheme.headlineLarge,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '★',
+                    style: TextStyle(
+                      color: theme.colorScheme.primary,
+                      fontSize: 22,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? AppColors.darkSurfaceContainerHigh
+                    : AppColors.lightSurfaceContainerHigh,
+                shape: BoxShape.circle,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(40),
+                  child: SvgPicture.asset(
+                    AppAssets.appLogoSvg,
+                    width: 40,
+                    height: 40,
+                    errorBuilder: (_, __, ___) => Icon(
+                      Icons.card_giftcard,
+                      size: 44,
+                      color: theme.colorScheme.primary,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          count == 1 ? '1 person in the draw' : '$count people in the draw',
+          style: theme.textTheme.bodyMedium?.copyWith(color: _muted(isDark)),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInputCard(ThemeData theme, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: theme.dividerTheme.color ?? AppColors.lightDivider,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        children: [
+          const SizedBox(width: 8),
+          Icon(Icons.person_add_outlined, size: 20, color: _muted(isDark)),
+          const SizedBox(width: 8),
+          Expanded(
+            child: TextField(
+              controller: _nameController,
+              focusNode: _nameFocus,
+              textCapitalization: TextCapitalization.words,
+              onSubmitted: (_) => _addParticipant(),
+              decoration: const InputDecoration(
+                hintText: 'Add a name',
+                border: InputBorder.none,
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                filled: false,
+                contentPadding: EdgeInsets.symmetric(vertical: 10),
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: _addParticipant,
+            style: ElevatedButton.styleFrom(
+              minimumSize: const Size(68, 42),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildImportSection(ThemeData theme, bool isDark, int count) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Flexible(
+                child: _linkButton(
+                  icon: Icons.file_upload_outlined,
+                  label: 'Import from Excel or CSV',
+                  onTap: _importFile,
+                  color: _muted(isDark),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Flexible(
+                child: _linkButton(
+                  icon: Icons.download_outlined,
+                  label: 'Download sample CSV',
+                  onTap: _downloadSampleTemplate,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Tip: use a column named Name, or First Name and Last Name.',
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    fontSize: 11,
+                    color: _muted(isDark),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Container(
+                width: 7,
+                height: 7,
+                decoration: BoxDecoration(
+                  color: count >= 3 ? theme.colorScheme.primary : Colors.orange,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                count >= 3 ? 'Ready to match' : 'Min. 3 needed',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListHeader(ThemeData theme) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          'PARTICIPANTS',
+          style: theme.textTheme.labelSmall?.copyWith(letterSpacing: 1.0),
+        ),
+        Text('Min. 3 required', style: theme.textTheme.labelSmall),
+      ],
+    );
+  }
+
+  Widget _buildList(ThemeData theme, bool isDark) {
+    if (_participants.isEmpty) {
+      return Center(
+        child: Text(
+          'No participants added yet.\nAdd names above or import from Excel/CSV.',
+          textAlign: TextAlign.center,
+          style: theme.textTheme.bodyMedium?.copyWith(color: _muted(isDark)),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      itemCount: _participants.length,
+      separatorBuilder: (context, _) =>
+          Divider(color: theme.dividerTheme.color, height: 1),
+      itemBuilder: (context, index) {
+        final name = _participants[index];
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 4),
+          child: Row(
+            children: [
+              AppAvatar(name: name, size: 36),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Text(
+                  name,
+                  style: theme.textTheme.bodyLarge?.copyWith(
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.close, size: 20, color: _muted(isDark)),
+                onPressed: () => _removeParticipant(index),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildFooter(ThemeData theme, bool isDark, int count) {
+    return Column(
+      children: [
+        const SizedBox(height: 8),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.lock_outline, size: 15, color: _muted(isDark)),
+            const SizedBox(width: 6),
+            Flexible(
+              child: Text(
+                'Draw assignments remain completely secret',
+                style: theme.textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton(
+          onPressed: count >= 3 ? _startDraw : null,
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Start the draw'),
+              SizedBox(width: 8),
+              Icon(Icons.arrow_forward, size: 18),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+      ],
+    );
+  }
+
+  // ---------------------------------------------------------------------------
+  // Build
+  // ---------------------------------------------------------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -301,387 +615,25 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppTheme.horizontalPadding,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 12),
-                      // Header Row
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            child: Row(
-                              children: [
-                                Flexible(
-                                  child: Text(
-                                    'Secret Santa',
-                                    style: theme.textTheme.headlineLarge,
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  '★',
-                                  style: TextStyle(
-                                    color: theme.colorScheme.primary,
-                                    fontSize: 22,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                          Container(
-                            width: 48,
-                            height: 48,
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppColors.darkSurfaceContainerHigh
-                                  : AppColors.lightSurfaceContainerHigh,
-                              shape: BoxShape.circle,
-                            ),
-                            child:Padding(
-                              padding: const EdgeInsets.all(4.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(40),
-                                child: SvgPicture.asset(
-                                  AppAssets.appLogoSvg,
-                                  width: 40,
-                                  height: 40,
-                                  errorBuilder: (_, __, ___) => Icon(
-                                    Icons.card_giftcard,
-                                    size: 44,
-                                    color: theme.colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        count == 1
-                            ? '1 person in the draw'
-                            : '$count people in the draw',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: isDark
-                              ? AppColors.darkTextMuted
-                              : AppColors.lightTextMuted,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      // Input Box Card
-                      Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.surface,
-                          borderRadius: BorderRadius.circular(14),
-                          border: Border.all(
-                            color: theme.dividerTheme.color ??
-                                AppColors.lightDivider,
-                            width: 1,
-                          ),
-                        ),
-                        child: Row(
-                          children: [
-                            const SizedBox(width: 8),
-                            Icon(
-                              Icons.person_add_outlined,
-                              size: 20,
-                              color: isDark
-                                  ? AppColors.darkTextMuted
-                                  : AppColors.lightTextMuted,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: TextField(
-                                controller: _nameController,
-                                focusNode: _nameFocus,
-                                textCapitalization: TextCapitalization.words,
-                                onSubmitted: (_) => _addParticipant(),
-                                decoration: const InputDecoration(
-                                  hintText: 'Add a name',
-                                  border: InputBorder.none,
-                                  enabledBorder: InputBorder.none,
-                                  focusedBorder: InputBorder.none,
-                                  filled: false,
-                                  contentPadding: EdgeInsets.symmetric(
-                                    vertical: 10,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            ElevatedButton(
-                              onPressed: _addParticipant,
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size(68, 42),
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                              ),
-                              child: const Text('Add'),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      // Import from Excel or CSV and Download sample CSV row
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 4,
-                          vertical: 6,
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Flexible(
-                                  child: InkWell(
-                                    onTap: _importFile,
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 4,
-                                        horizontal: 2,
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.file_upload_outlined,
-                                            size: 16,
-                                            color: isDark
-                                                ? AppColors.darkTextMuted
-                                                : AppColors.lightTextMuted,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Flexible(
-                                            child: Text(
-                                              'Import from Excel or CSV',
-                                              style: theme.textTheme.bodySmall?.copyWith(
-                                                decoration: TextDecoration.underline,
-                                                fontWeight: FontWeight.w500,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Flexible(
-                                  child: InkWell(
-                                    onTap: _downloadSampleTemplate,
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 4,
-                                        horizontal: 2,
-                                      ),
-                                      child: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.download_outlined,
-                                            size: 16,
-                                            color: theme.colorScheme.primary,
-                                          ),
-                                          const SizedBox(width: 4),
-                                          Flexible(
-                                            child: Text(
-                                              'Download sample CSV',
-                                              style: theme.textTheme.bodySmall?.copyWith(
-                                                decoration: TextDecoration.underline,
-                                                fontWeight: FontWeight.w500,
-                                                color: theme.colorScheme.primary,
-                                              ),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 6),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    'Tip: use a column named Name, or First Name and Last Name.',
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      fontSize: 11,
-                                      color: isDark
-                                          ? AppColors.darkTextMuted
-                                          : AppColors.lightTextMuted,
-                                    ),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Container(
-                                      width: 7,
-                                      height: 7,
-                                      decoration: BoxDecoration(
-                                        color: count >= 3
-                                            ? theme.colorScheme.primary
-                                            : Colors.orange,
-                                        shape: BoxShape.circle,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      count >= 3 ? 'Ready to match' : 'Min. 3 needed',
-                                      style: theme.textTheme.bodySmall?.copyWith(
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      const SizedBox(height: 12),
-
-                      // Participants Section Header
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'PARTICIPANTS',
-                            style: theme.textTheme.labelSmall?.copyWith(
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          Text(
-                            'Min. 3 required',
-                            style: theme.textTheme.labelSmall,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-
-                      // Participant List
-                      Expanded(
-                        child: _participants.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No participants added yet.\nAdd names above or import from Excel/CSV.',
-                                  textAlign: TextAlign.center,
-                                  style: theme.textTheme.bodyMedium?.copyWith(
-                                    color: isDark
-                                        ? AppColors.darkTextMuted
-                                        : AppColors.lightTextMuted,
-                                  ),
-                                ),
-                              )
-                            : ListView.separated(
-                                itemCount: _participants.length,
-                                separatorBuilder: (context, _) => Divider(
-                                  color: theme.dividerTheme.color,
-                                  height: 1,
-                                ),
-                                itemBuilder: (context, index) {
-                                  final name = _participants[index];
-                                  return Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 10,
-                                      horizontal: 4,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        AppAvatar(name: name, size: 36),
-                                        const SizedBox(width: 14),
-                                        Expanded(
-                                          child: Text(
-                                            name,
-                                            style: theme.textTheme.bodyLarge
-                                                ?.copyWith(
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                        IconButton(
-                                          icon: Icon(
-                                            Icons.close,
-                                            size: 20,
-                                            color: isDark
-                                                ? AppColors.darkTextMuted
-                                                : AppColors.lightTextMuted,
-                                          ),
-                                          onPressed: () =>
-                                              _removeParticipant(index),
-                                          padding: EdgeInsets.zero,
-                                          constraints: const BoxConstraints(),
-                                        ),
-                                      ],
-                                    ),
-                                  );
-                                },
-                              ),
-                      ),
-
-                      // Footer & Action Button
-                      Column(
-                        children: [
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(
-                                Icons.lock_outline,
-                                size: 15,
-                                color: isDark
-                                    ? AppColors.darkTextMuted
-                                    : AppColors.lightTextMuted,
-                              ),
-                              const SizedBox(width: 6),
-                              Flexible(
-                                child: Text(
-                                  'Draw assignments remain completely secret',
-                                  style: theme.textTheme.bodySmall,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          ElevatedButton(
-                            onPressed: count >= 3 ? _startDraw : null,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: const [
-                                Text('Start the draw'),
-                                SizedBox(width: 8),
-                                Icon(Icons.arrow_forward, size: 18),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+            padding: const EdgeInsets.symmetric(
+              horizontal: AppTheme.horizontalPadding,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 12),
+                _buildHeader(theme, isDark, count),
+                const SizedBox(height: 24),
+                _buildInputCard(theme, isDark),
+                _buildImportSection(theme, isDark, count),
+                const SizedBox(height: 12),
+                _buildListHeader(theme),
+                const SizedBox(height: 8),
+                Expanded(child: _buildList(theme, isDark)),
+                _buildFooter(theme, isDark, count),
+              ],
+            ),
+          ),
         ),
       ),
     );

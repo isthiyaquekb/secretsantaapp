@@ -18,3 +18,4 @@ class TemplateService {
     await downloadOrShareCsv(templateFilename, sampleCsvContent);
   }
 }
+
