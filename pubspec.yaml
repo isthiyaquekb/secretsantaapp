@@ -44,6 +44,8 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   crypto: ^3.0.8
   archive: ^3.6.1
+  share_plus: ^13.3.1
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:
@@ -73,6 +75,7 @@ flutter:
     - assets/png/
     - assets/svg/
     - assets/icon/
+    - assets/templates/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
