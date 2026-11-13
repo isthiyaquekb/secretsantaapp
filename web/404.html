@@ -6,14 +6,19 @@
   <title>Secret Santa</title>
   <script>
     (function() {
+      var base = '/';
+      if (window.location.hostname.endsWith('github.io')) {
+        var segments = window.location.pathname.split('/').filter(Boolean);
+        if (segments.length > 0) {
+          base = '/' + segments[0] + '/';
+        }
+      }
       var pathname = window.location.pathname;
-      // If user navigated to /privacypolicy without trailing slash
-      if (pathname === '/privacypolicy' || pathname.indexOf('/privacypolicy/') === 0) {
-        window.location.replace('/privacypolicy/');
+      if (pathname.indexOf('/privacypolicy') !== -1) {
+        window.location.replace(base + 'privacypolicy/');
         return;
       }
-      // Redirect to Flutter Web app root preserving search and hash
-      var target = '/' + (window.location.search || '') + (window.location.hash || '');
+      var target = base + (window.location.search || '') + (window.location.hash || '');
       window.location.replace(target);
     })();
   </script>
@@ -42,8 +47,8 @@
     <h1>Page Not Found</h1>
     <p>Redirecting to Secret Santa...</p>
     <p>
-      <a href="/">Open App</a> &middot;
-      <a href="/privacypolicy/">Privacy Policy</a>
+      <a href="./">Open App</a> &middot;
+      <a href="privacypolicy/">Privacy Policy</a>
     </p>
   </main>
 </body>
