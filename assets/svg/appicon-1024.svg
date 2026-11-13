@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="1024" height="1024" xmlns:c2pa="http://c2pa.org/manifest">
+  <rect width="400" height="400" fill="#fff"/>
+  <g transform="translate(200 200) scale(.9) translate(-200 -210)">
+    <path d="M105 165 C105 85 170 45 245 58 C292 68 302 120 302 165 Z" fill="#9E1B26"/>
+    <circle cx="122" cy="92" r="25" fill="#fff" stroke="#CFC6C6" stroke-width="6"/>
+    <rect x="88" y="150" width="228" height="44" rx="22" fill="#fff" stroke="#CFC6C6" stroke-width="6"/>
+    <path d="M100 240 C125 267 160 267 202 253 C245 267 280 267 305 240 C312 315 262 364 202 380 C142 364 92 315 100 240 Z" fill="#F3F0F0" stroke="#CFC6C6" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M135 262 Q168 288 202 268 Q236 288 270 262" fill="none" stroke="#CFC6C6" stroke-width="7" stroke-linecap="round"/>
+    <ellipse cx="202" cy="296" rx="22" ry="9" fill="#fff" stroke="#CFC6C6" stroke-width="5"/>
+  </g>
+</svg>
