@@ -3,9 +3,9 @@
     "short_name": "Secret Santa",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Secret Santa application.",
+    "background_color": "#F9F7F7",
+    "theme_color": "#9E1B26",
+    "description": "A simple, private office gift exchange.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
