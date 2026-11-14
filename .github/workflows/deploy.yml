@@ -37,21 +37,25 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Build Web release
-        run: flutter build web --release
+      - name: Build site and Flutter web app
+        run: bash scripts/build_site.sh
 
-      - name: Verify build artifacts
+      - name: Verify deploy artifacts
         run: |
-          test -f build/web/index.html || { echo "Missing build/web/index.html"; exit 1; }
-          test -f build/web/privacypolicy/index.html || { echo "Missing build/web/privacypolicy/index.html"; exit 1; }
-          test -f build/web/404.html || { echo "Missing build/web/404.html"; exit 1; }
-          test -f build/web/CNAME || { echo "Missing build/web/CNAME"; exit 1; }
-          echo "All required build artifacts verified successfully."
+          test -f deploy/index.html || { echo "Missing deploy/index.html"; exit 1; }
+          test -f deploy/about.html || { echo "Missing deploy/about.html"; exit 1; }
+          test -f deploy/contact.html || { echo "Missing deploy/contact.html"; exit 1; }
+          test -f deploy/privacypolicy.html || { echo "Missing deploy/privacypolicy.html"; exit 1; }
+          test -f deploy/404.html || { echo "Missing deploy/404.html"; exit 1; }
+          test -f deploy/.nojekyll || { echo "Missing deploy/.nojekyll"; exit 1; }
+          test -f deploy/flutter_service_worker.js || { echo "Missing deploy/flutter_service_worker.js"; exit 1; }
+          test -f deploy/home/index.html || { echo "Missing deploy/home/index.html"; exit 1; }
+          echo "All required deploy artifacts verified successfully."
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: build/web
+          path: deploy
 
   deploy:
     name: Deploy to GitHub Pages
