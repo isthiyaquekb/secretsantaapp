@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Contact – Secret Santa</title>
+  <meta name="description" content="Get in touch with the Secret Santa developer for support, feedback, or inquiries.">
+  <link rel="canonical" href="https://isthiyaquekb.github.io/secretsantaapp/contact">
+  <meta name="theme-color" content="#9E1B26">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/config.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="./" class="brand">
+        <img src="assets/logo.png" alt="Secret Santa Logo" class="brand-logo" width="38" height="38">
+        <span>Secret Santa</span>
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="about">About</a></li>
+          <li><a href="privacypolicy">Privacy</a></li>
+          <li><a href="contact" style="color: var(--red);">Contact</a></li>
+          <li><a href="home/" class="btn btn-primary">Open web app</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="content-wrapper">
+    <h1>Contact &amp; Support <span>★</span></h1>
+    <p class="meta">Have feedback, questions, or encountered an issue? We'd love to hear from you.</p>
+
+    <div class="contact-card">
+      <h2>Send an Email</h2>
+      <p>Because Secret Santa has no backend and stores zero personal accounts, we do not use an online form. You can reach out directly via email, and we typically respond to feedback and bug reports promptly.</p>
+      <p style="margin: 24px 0;">
+        <a id="email-link" href="mailto:developer.isthiyaque@gmail.com" class="btn btn-primary btn-lg">
+          <span id="email-text">developer.isthiyaque@gmail.com</span>
+        </a>
+      </p>
+    </div>
+
+    <h2>Mobile Apps</h2>
+    <p>Secret Santa is coming to mobile platforms soon. Check the links below for availability:</p>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 16px;">
+      <a id="contact-appstore" class="btn btn-secondary btn-disabled" href="#" aria-disabled="true">
+        App Store <span class="badge-soon">Coming soon</span>
+      </a>
+      <a id="contact-playstore" class="btn btn-secondary btn-disabled" href="#" aria-disabled="true">
+        Google Play <span class="badge-soon">Coming soon</span>
+      </a>
+    </div>
+
+    <div style="margin-top: 48px;">
+      <a href="./" class="btn btn-secondary">&larr; Return to Home</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>
+        <nav aria-label="Footer Navigation">
+          <ul class="footer-nav">
+            <li><a href="about">About</a></li>
+            <li><a href="privacypolicy">Privacy Policy</a></li>
+            <li><a href="contact">Contact</a></li>
+            <li><a href="home/">Open web app</a></li>
+          </ul>
+        </nav>
+        <p class="footer-tagline">Made for the holidays &middot; &copy; 2026 Isthiyaque Kambathagothi</p>
+      </div>
+      <div>
+        <a href="home/" class="btn btn-secondary">Open Secret Santa</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      if (window.APP_CONFIG) {
+        if (window.APP_CONFIG.CONTACT_EMAIL) {
+          var link = document.getElementById('email-link');
+          var text = document.getElementById('email-text');
+          if (link) link.href = 'mailto:' + window.APP_CONFIG.CONTACT_EMAIL;
+          if (text) text.textContent = window.APP_CONFIG.CONTACT_EMAIL;
+        }
+        if (window.APP_CONFIG.STORE_LIVE) {
+          if (window.APP_CONFIG.APP_STORE_URL) {
+            var as = document.getElementById('contact-appstore');
+            as.href = window.APP_CONFIG.APP_STORE_URL;
+            as.className = 'btn btn-secondary';
+            as.removeAttribute('aria-disabled');
+            as.textContent = 'App Store';
+          }
+          if (window.APP_CONFIG.PLAY_STORE_URL) {
+            var ps = document.getElementById('contact-playstore');
+            ps.href = window.APP_CONFIG.PLAY_STORE_URL;
+            ps.className = 'btn btn-secondary';
+            ps.removeAttribute('aria-disabled');
+            ps.textContent = 'Google Play';
+          }
+        }
+      }
+    })();
+  </script>
+</body>
+</html>
+

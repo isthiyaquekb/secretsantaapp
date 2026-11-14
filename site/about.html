@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>About – Secret Santa</title>
+  <meta name="description" content="Learn about Secret Santa, the office holiday gift exchange tradition, and how our privacy-first app makes it effortless.">
+  <link rel="canonical" href="https://isthiyaquekb.github.io/secretsantaapp/about">
+  <meta name="theme-color" content="#9E1B26">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="stylesheet" href="assets/site.css">
+  <script src="assets/config.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="./" class="brand">
+        <img src="assets/logo.png" alt="Secret Santa Logo" class="brand-logo" width="38" height="38">
+        <span>Secret Santa</span>
+      </a>
+      <nav aria-label="Main Navigation">
+        <ul class="nav-links">
+          <li><a href="about" style="color: var(--red);">About</a></li>
+          <li><a href="privacypolicy">Privacy</a></li>
+          <li><a href="contact">Contact</a></li>
+          <li><a href="home/" class="btn btn-primary">Open web app</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="content-wrapper">
+    <h1>About Secret Santa <span>★</span></h1>
+    <p class="meta">The simple, private way to run holiday gift exchanges.</p>
+
+    <h2>The Holiday Tradition</h2>
+    <p>Secret Santa (also known as Kris Kringle or X-mas Friend) is a cherished holiday tradition where a group anonymously exchanges gifts. Each member randomly draws the name of one recipient to buy a present for, with the identity of the gift-giver kept a secret until the unwrapping party.</p>
+
+    <h2>How the App Works</h2>
+    <p>Traditionally, organizing an exchange meant cutting up pieces of paper, drawing them from a hat, and hoping no one pulled their own name. This app modernizes that process while keeping the human connection intact:</p>
+    <ul>
+      <li><strong>Easy Roster Setup:</strong> Enter names one by one or import an existing Excel (.xlsx) or CSV file in seconds.</li>
+      <li><strong>Fair Randomization:</strong> The algorithm creates a continuous single cycle so everyone gives one gift and receives one gift, and no one ever draws themselves.</li>
+      <li><strong>Pass-and-Reveal:</strong> Designed for an in-person pass-around. Participants hold down to view their assigned recipient privately and let go to conceal it.</li>
+      <li><strong>Master PIN Protection:</strong> The organizer sets an HR PIN to discreetly verify pairings later if someone forgets their recipient.</li>
+    </ul>
+
+    <h2>Who It Is For</h2>
+    <p>Secret Santa is built for any group celebrating together:</p>
+    <ul>
+      <li><strong>Workplace teams &amp; offices</strong> seeking a hassle-free exchange without sending company emails to external servers.</li>
+      <li><strong>Friends &amp; families</strong> hosting annual holiday get-togethers.</li>
+      <li><strong>Classrooms &amp; student groups</strong> organizing end-of-term celebrations.</li>
+      <li><strong>Clubs &amp; community groups</strong> organizing festive events.</li>
+    </ul>
+
+    <h2>The Privacy-First Promise</h2>
+    <p>We believe holiday traditions shouldn't require creating accounts, giving up email addresses, or having personal data tracked. <strong>All data stays on your device only.</strong> Names, pairings, and dates are saved in your local device storage and are never uploaded to any cloud server.</p>
+
+    <h2>About the Developer</h2>
+    <p>Secret Santa is independently built and maintained by <span id="dev-name">Isthiyaque Kambathagothi</span> with a focus on clean design, performance, and respectful privacy practices.</p>
+
+    <div style="margin-top: 40px;">
+      <a href="home/" class="btn btn-primary btn-lg">Launch Secret Santa</a>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div>
+        <nav aria-label="Footer Navigation">
+          <ul class="footer-nav">
+            <li><a href="about">About</a></li>
+            <li><a href="privacypolicy">Privacy Policy</a></li>
+            <li><a href="contact">Contact</a></li>
+            <li><a href="home/">Open web app</a></li>
+          </ul>
+        </nav>
+        <p class="footer-tagline">Made for the holidays &middot; &copy; 2026 Isthiyaque Kambathagothi</p>
+      </div>
+      <div>
+        <a href="home/" class="btn btn-secondary">Open Secret Santa</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    (function() {
+      if (window.APP_CONFIG && window.APP_CONFIG.DEVELOPER_NAME) {
+        var el = document.getElementById('dev-name');
+        if (el) el.textContent = window.APP_CONFIG.DEVELOPER_NAME;
+      }
+    })();
+  </script>
+</body>
+</html>
+
