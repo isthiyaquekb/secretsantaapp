@@ -66,6 +66,16 @@ class _ParticipantsScreenState extends State<ParticipantsScreen> {
       state.copyWith(participants: _participants),
     );
     await StorageService.saveParticipants(_participants);
+    if (DrawRepository.instance.hasWriteFailure && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            "Couldn't save on this device. Your changes will be lost when you close the app.",
+          ),
+          duration: Duration(seconds: 4),
+        ),
+      );
+    }
   }
 
   Future<void> _addParticipant() async {
